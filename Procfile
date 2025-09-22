@@ -1,1 +1,1 @@
-web: gunicorn apptyui:app
+web: gunicorn app:app
