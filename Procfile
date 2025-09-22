@@ -1,0 +1,1 @@
+web: gunicorn apptyui:app
