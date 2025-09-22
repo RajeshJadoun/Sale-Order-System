@@ -7,6 +7,13 @@ from datetime import datetime, date
 import os
 import sqlite3
 
+# === RENDER MODIFICATION: POINT TO PERSISTENT DISK ===
+# Use the same data directory as the main app
+DATA_DIR = '/var/data'
+DB_FILE = os.path.join(DATA_DIR, 'order_counter.db')
+# =======================================================
+
+
 # ---------------------------
 # STYLE DEFINITIONS
 # ---------------------------
@@ -66,11 +73,10 @@ def add_separator_row(ws, current_row, height):
 # --- UPDATED LOGIC FOR ORDER ID (DATABASE) ---
 def generate_unique_order_id():
     """Generates a unique order ID in the format MM-YY-NNNNN using a database."""
-    db_file = "order_counter.db"
     conn = None
     try:
-        # Connect to the SQLite database file
-        conn = sqlite3.connect(db_file)
+        # Connect to the SQLite database file on the persistent disk
+        conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -109,10 +115,10 @@ def generate_unique_order_id():
 
 def log_order_to_database(username, dealer_name, city, order_id, report_name):
     """Log the generated order to database for tracking"""
-    db_file = "order_counter.db"
     conn = None
     try:
-        conn = sqlite3.connect(db_file)
+        # Connect to the SQLite database file on the persistent disk
+        conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         
         # Create table if it doesn't exist
