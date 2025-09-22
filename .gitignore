@@ -1,0 +1,19 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Environment
+.env
+
+# Application Data (generated on the server)
+uploads/
+reports/
+order_counter.db
+app.log
+
+# OS-specific
+.DS_Store
