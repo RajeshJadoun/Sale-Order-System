@@ -9,7 +9,7 @@ services:
     startCommand: "gunicorn --workers 4 --bind 0.0.0.0:$PORT 'apptyui:app'"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.12
+        value: 3.11 # Changed from 3.10.12 or 3.13 to 3.11
       - fromGroup: sale-order-secrets
     disks:
       - name: data-disk
