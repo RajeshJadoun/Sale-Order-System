@@ -1,0 +1,17 @@
+# render.yaml
+
+services:
+  - type: web
+    name: sale-order-system
+    env: python
+    plan: free # Or 'starter' for better performance
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn --workers 4 --bind 0.0.0.0:$PORT 'apptyui:app'"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - fromGroup: sale-order-secrets
+    disks:
+      - name: data-disk
+        mountPath: /var/data
+        sizeGB: 1
