@@ -7,15 +7,11 @@ from datetime import datetime
 import pandas as pd
 import uuid
 from functools import wraps
-from dotenv import load_dotenv
 import time
 import sqlite3
 import math
 from flask_bcrypt import Bcrypt
 import re # Import re for filename sanitization
-
-# ---------------- Load environment variables ----------------
-load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -38,7 +34,7 @@ if not app.secret_key:
 
 # Session configuration for better security
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+app.config['SESSION_COOKIE_SECURE'] = True  # Set to True in production with HTTPS
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour session timeout
 
@@ -83,16 +79,21 @@ for key, value in os.environ.items():
         except ValueError:
             app.logger.warning(f"Invalid user format in {key} (expected USERX=username:hashed_password)")
 
+# === RENDER MODIFICATION: POINT TO PERSISTENT DISK ===
+# The mount path for our Render Disk will be '/var/data'
+DATA_DIR = '/var/data'
+
 # Configuration
 class Config:
-    UPLOAD_FOLDER = 'uploads'
-    REPORT_FOLDER = 'reports'
+    UPLOAD_FOLDER = os.path.join(DATA_DIR, 'uploads')
+    REPORT_FOLDER = os.path.join(DATA_DIR, 'reports')
+    DATABASE_FILE = os.path.join(DATA_DIR, 'order_counter.db')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     ALLOWED_EXTENSIONS = {'xls', 'xlsx'}
     CLEANUP_INTERVAL_HOURS = int(os.getenv('CLEANUP_INTERVAL_HOURS', 8))
-    DATABASE_FILE = "order_counter.db"
 
 app.config.from_object(Config)
+# =======================================================
 
 # Ensure directories exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -582,7 +583,7 @@ def create_page_template(title, body_content, is_card=False, is_container=False)
     </html>
     """
 
-# ---------------- Helpers (unchanged) ----------------
+# ---------------- Helpers ----------------
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
@@ -1472,21 +1473,3 @@ def favicon():
         <text x="32" y="45" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="white">📊</text>
     </svg>'''
     return svg_content, 200, {'Content-Type': 'image/svg+xml'}
-
-# Additional routes would follow the same pattern...
-# For brevity, I'll include the main function and note that other routes follow similar enhancement patterns
-
-# ---------------- Main ----------------
-if __name__ == "__main__":
-    admin_pass_hash = os.getenv("ADMIN_PASSWORD")
-    if not admin_pass_hash:
-        raise ValueError("ADMIN_PASSWORD environment variable is not set!")
-
-    entered = input("🔐 Enter admin password to start server: ")
-    if not bcrypt.check_password_hash(admin_pass_hash, entered):
-        print("❌ Wrong password. Server not starting...")
-        exit(1)
-
-    print("✅ Authentication successful. Starting server...")
-    init_db()
-    app.run(debug=True, host='0.0.0.0')
